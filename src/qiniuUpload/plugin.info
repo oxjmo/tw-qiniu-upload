@@ -1,0 +1,9 @@
+{
+  "title": "$:/plugins/oxjmo/qiniuUpload",
+  "name": "qiniuUpload",
+  "author": "oxjmo",
+  "description": "一键上传七牛云",
+  "plugin-type": "plugin",
+  "version": "0.0.1",
+  "list": "readme tree config"
+}

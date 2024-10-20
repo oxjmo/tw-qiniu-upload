@@ -1,0 +1,7 @@
+title: $:/core/ui/Buttons/upload
+tags: $:/tags/PageControls
+
+\whitespace trim
+<$button tooltip="上传七牛云" aria-label="上传七牛云" class=<<tv-config-toolbar-class>>>
+  <$QiniuUploadWidget />
+</$button>
