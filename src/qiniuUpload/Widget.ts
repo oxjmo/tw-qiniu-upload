@@ -13,7 +13,7 @@ class QiniuUploadWidget extends Widget {
     this.computeAttributes();
     this.execute();
     const containerElement = $tw.utils.domMaker("div", {});
-    containerElement.innerHTML = '<svg t="1729218583617" class="icon tc-image-save-button-dynamic tc-image-button" viewBox="0 0 1532 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4477" width="200" height="200"><path d="M0.303407 0h28.065186c15.094519 3.792593 29.354667 10.998519 39.215407 23.286519 86.243556 100.200296 194.484148 181.134222 314.481778 236.430222-5.840593-50.669037-12.743111-101.262222-18.280297-152.007111 33.754074-3.489185 70.618074 12.667259 82.223408 46.497185 15.701333 48.165926 26.851556 97.697185 41.111704 146.318222 173.624889 54.46163 363.254519 57.268148 537.941333 5.840593 169.832296-49.379556 324.342519-149.276444 439.789037-283.230815 9.784889-12.212148 23.969185-19.342222 38.987852-23.134815h27.989333c-49.910519 147.683556-149.655704 276.631704-272.914963 371.067259-199.793778 154.055111-472.860444 204.344889-715.207111 135.243852 28.292741 101.869037 56.357926 203.813926 85.257482 305.531259 5.461333 31.706074 27.45837 62.881185 61.819259 65.384297 58.102519 1.972148 116.356741 0.075852 174.459259 0.910222 28.368593 1.744593 59.088593-13.50163 69.025185-41.263408 18.583704-55.978667 28.444444-114.915556 50.744889-169.680592 27.685926-63.563852 96.104296-104.296296 165.281185-98.531556-11.757037 98.910815-23.286519 197.82163-35.877926 296.580741-11.301926 78.051556-71.149037 154.282667-154.510222 158.757926H611.51763c-92.690963-5.082074-152.917333-96.331852-157.847704-182.423704-15.701333-129.554963-31.706074-259.034074-47.786667-388.513185C220.122074 360.978963 68.114963 196.835556 0.303407 0z" p-id="4478"></path></svg>'
+    containerElement.innerHTML = '<svg class="icon tc-image-save-button-dynamic tc-image-button" viewBox="0 0 1532 1024" xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M0 0h28c15 4 30 11 40 23a929 929 0 0 0 314 237l-18-152c34-4 70 12 82 46 16 48 27 98 41 147a926 926 0 0 0 978-277c10-13 24-20 39-24h28a820 820 0 0 1-988 506l85 306c5 32 27 63 62 65 58 2 116 0 174 1 29 2 59-13 69-41 19-56 29-115 51-170 28-63 96-104 165-98-11 99-23 197-36 296-11 78-71 155-154 159H612c-93-5-153-96-158-182l-48-389A811 811 0 0 1 0 0z"/></svg>'
     containerElement.addEventListener("click", upload)
     parent.insertBefore(containerElement, nextSibling);
     this.domNodes.push(parent.appendChild(containerElement))
@@ -43,18 +43,19 @@ function createForm() {
   const formItems = configkeys.map((key, keyIndex) => {
     const formValue = (() => {
       if(key === "region") {
-        const options = [
-          {label: "华东-浙江", value: "http://up-z0.qiniup.com"},
-          {label: "华东-浙江2", value: "http://up-cn-east-2.qiniup.com"},
-          {label: "华北-河北", value: "http://up-z1.qiniup.com"},
-          {label: "华南-广东", value: "http://up-z2.qiniup.com"},
-          {label: "北美-洛杉矶", value: "http://up-na0.qiniup.com"},
-          {label: "亚太-新加坡", value: "http://up-as0.qiniup.com"},
-          {label: "亚太-河内", value: "http://up-ap-southeast-2.qiniup.com"},
-          {label: "亚太-胡志明", value: "http://up-ap-southeast-3.qiniup.com"},
-        ].map(({label, value}) => $tw.utils.domMaker("option", {
-          attributes: Object.assign({value}, qiniuConfig[key] === value ? {selected: true} : {}),
-          text: label
+        const optionsMap = {
+          "华东-浙江": "http://up-z0.qiniup.com",
+          "华东-浙江2": "http://up-cn-east-2.qiniup.com",
+          "华北-河北": "http://up-z1.qiniup.com",
+          "华南-广东": "http://up-z2.qiniup.com",
+          "北美-洛杉矶": "http://up-na0.qiniup.com",
+          "亚太-新加坡": "http://up-as0.qiniup.com",
+          "亚太-河内": "http://up-ap-southeast-2.qiniup.com",
+          "亚太-胡志明": "http://up-ap-southeast-3.qiniup.com"
+        } as const
+        const options = Object.keys(optionsMap).map((keyItem) => $tw.utils.domMaker("option", {
+          attributes: Object.assign({value: optionsMap[keyItem as keyof typeof optionsMap]}, qiniuConfig[key] === optionsMap[keyItem as keyof typeof optionsMap] ? {selected: true} : {}),
+          text: keyItem
         }))
         return $tw.utils.domMaker("select", {children: options})
       }
@@ -85,9 +86,15 @@ async function upload() {
   const blob = new Blob([pages], { type: 'text/html' });
   const file = new File([blob], "index.html", { type: 'text/html' });
   const qiniuConfigJSON = localStorage.getItem("qiniu_config")
-  if(!qiniuConfigJSON) return notifier("''🔔 先配置七牛云 🔔''")
+  if(!qiniuConfigJSON) {
+    navigateTiddler("$:/plugins/oxjmo/qiniuUpload")
+    return notifier("''🔔 先配置七牛云 🔔''")
+  }
   const qiniuConfig = JSON.parse(qiniuConfigJSON) as {[key in typeof configkeys[number]]: string}
-  if(configkeys.some((key) => !qiniuConfig[key])) return notifier("''🔔 全部配置都不能为空 🔔''");
+  if(configkeys.some((key) => !qiniuConfig[key])) {
+    navigateTiddler("$:/plugins/oxjmo/qiniuUpload")
+    return notifier("''🔔 全部配置都不能为空 🔔''");
+  }
   const {accessKey, secretkey, region} = qiniuConfig
   const bucketName = qiniuConfig.bucketName
   const targetPath = qiniuConfig.targetPath
@@ -97,18 +104,50 @@ async function upload() {
   formData.append("key", targetPath)
   formData.append("token", token)
   formData.append("options.force", "true")
-  const response = await fetch(region, {method: "post", body: formData})
-  if(response.ok) {
-    notifier("''🎉 上传成功 🎉 ''")
-  }else {
-    notifier(`''🔔 上传失败 🔔''\n\n错误码：${response.status}`)
+  try {
+    await fileUpload(region, formData)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    notifier(`''🎉 上传成功 🎉'' 文件大小：${(file.size / 1024 / 1024).toFixed(2)}MB`)
+  }catch(error: any){
+    if(error instanceof Error) {
+      notifier(`''🔔 上传失败 🔔''  错误信息：${error.message}`)
+    }
+    if("status" in error) {
+      notifier(`''🔔 上传失败 🔔''  错误码：${error.status}`)
+    }
+    notifier(`''🔔 上传失败 🔔'''  未知错误`)
   }
+}
+
+async function fileUpload(url: string, formData: FormData) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url, true)
+    xhr.upload.onprogress = function(event) {
+      if(!event.lengthComputable) return
+      const percentComplete = ((event.loaded / event.total) * 100).toFixed(2);
+      notifier(`上传进度：${percentComplete}%`)
+    }
+    xhr.onload = async function() {
+      if (xhr.status === 200) {
+        resolve(true)
+      } else {
+        reject({status: xhr.status})
+      }
+    }
+    xhr.send(formData);
+  })
 }
 
 async function notifier(message: string) {
   const tiddler = $tw.wiki.getTiddler("$:/language/Buttons/Upload/notifier")!
   $tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {text: message}))
   $tw.notifier.display("$:/language/Buttons/Upload/notifier")
+}
+
+async function navigateTiddler(title: string) {
+  const story = new $tw.Story()
+  story.navigateTiddler(title)
 }
 
 declare let exports: {
